@@ -53,7 +53,8 @@
     /// Enqueue the value provided into the queue
     /// </summary>
     /// <param name="value">Integer value to add to the queue</param>
-    private void Enqueue(int value) {
+    private void Enqueue(int value) 
+    {
         _queue.Add(value); // Defect 2 - Need to add to the end of the queue
     }
 
