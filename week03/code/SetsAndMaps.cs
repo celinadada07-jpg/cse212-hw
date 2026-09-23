@@ -15,14 +15,33 @@ public static class SetsAndMaps
     /// at would not be returned because ta is not in the list of words.
     ///
     /// As a special case, if the letters are the same (example: 'aa') then
-    /// it would not match anything else (remember the assumption above
-    /// that there were no duplicates) and therefore should not be returned.
+    /// it would not match anything else (remember the assumption above that there were no duplicates) and therefore should not be returned.
     /// </summary>
     /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
     public static string[] FindPairs(string[] words)
     {
-        // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        var seen = new HashSet<string>();
+        var results = new List<string>();
+
+        foreach (var word in words)
+        {
+            // Skip words with identical letters (e.g. "aa")
+            if (word[0] == word[1])
+                continue;
+
+            string reverse = $"{word[1]}{word[0]}";
+
+            if (seen.Contains(reverse))
+            {
+                results.Add($"{reverse} & {word}");
+            }
+            else
+            {
+                seen.Add(word);
+            }
+        }
+
+        return results.ToArray();
     }
 
     /// <summary>
@@ -42,7 +61,15 @@ public static class SetsAndMaps
         foreach (var line in File.ReadLines(filename))
         {
             var fields = line.Split(",");
-            // TODO Problem 2 - ADD YOUR CODE HERE
+            // Column 4 is index 3
+            if (fields.Length > 3)
+            {
+                string degree = fields[3].Trim();
+                if (degrees.ContainsKey(degree))
+                    degrees[degree]++;
+                else
+                    degrees[degree] = 1;
+            }
         }
 
         return degrees;
@@ -66,13 +93,38 @@ public static class SetsAndMaps
     /// </summary>
     public static bool IsAnagram(string word1, string word2)
     {
-        // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+        // Normalize: remove spaces and convert to lower case
+        string a = word1.Replace(" ", "").ToLower();
+        string b = word2.Replace(" ", "").ToLower();
+
+        if (a.Length != b.Length)
+            return false;
+
+        var counts = new Dictionary<char, int>();
+
+        // Count letters in first word
+        foreach (char c in a)
+        {
+            if (counts.ContainsKey(c))
+                counts[c]++;
+            else
+                counts[c] = 1;
+        }
+
+        // Decrement using second word
+        foreach (char c in b)
+        {
+            if (!counts.ContainsKey(c) || counts[c] == 0)
+                return false;
+            counts[c]--;
+        }
+
+        return true;
     }
 
     /// <summary>
     /// This function will read JSON (Javascript Object Notation) data from the 
-    /// United States Geological Service (USGS) consisting of earthquake data.
+    /// United States Geological Service (US.GS) consisting of earthquake data.
     /// The data will include all earthquakes in the current day.
     /// 
     /// JSON data is organized into a dictionary. After reading the data using
@@ -96,11 +148,20 @@ public static class SetsAndMaps
 
         var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json, options);
 
-        // TODO Problem 5:
-        // 1. Add code in FeatureCollection.cs to describe the JSON using classes and properties 
-        // on those classes so that the call to Deserialize above works properly.
-        // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
-        // 3. Return an array of these string descriptions.
-        return [];
+        // Build the result array
+        var results = new List<string>();
+        if (featureCollection?.Features != null)
+        {
+            foreach (var feature in featureCollection.Features)
+            {
+                var props = feature.Properties;
+                if (props?.Place != null && props.Mag.HasValue)
+                {
+                    results.Add($"{props.Place} - Mag {props.Mag}");
+                }
+            }
+        }
+
+        return results.ToArray();
     }
 }
